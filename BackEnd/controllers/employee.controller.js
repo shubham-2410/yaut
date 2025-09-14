@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import { EmployeeModel } from "../models/employee.model.js";
 
 export const createEmployee = async (req, res) => {
+  console.log("In")
   try {
     const hashedPassword = await bcrypt.hash(req.body.password, 10);
     const employee = await EmployeeModel.create({

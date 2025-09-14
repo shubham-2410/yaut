@@ -41,6 +41,11 @@ const bookingSchema = new mongoose.Schema({
         required: true,
         min: 0
     },
+    advanceAmount: {
+        type: Number,
+        required: true,
+        min: 0
+    },
     pendingAmount: {
         type: Number,
         required: true,
@@ -52,7 +57,8 @@ const bookingSchema = new mongoose.Schema({
         default: 'Initiated'
     }
 }, {
-    timestamps: true
+    timestamps: true,
+    strictPopulate: false 
 });
 
 export const BookingModel = mongoose.model('Booking', bookingSchema);

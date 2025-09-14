@@ -27,13 +27,12 @@ const customerSchema = new mongoose.Schema({
   bookingId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Booking',
-    required: true
   },
   govtIdImage: {
     type: String,
     required: true // could be URL or local file path
   },
-  govIdNo: {
+  govtIdNo: {
     type: String,
     required: true,
     match: [/^[a-zA-Z0-9]+$/, 'Govt ID must be alphanumeric']

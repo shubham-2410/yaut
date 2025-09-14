@@ -1,7 +1,9 @@
 import { CustomerModel } from "../models/customer.model.js";
 
 export const createCustomer = async (req, res) => {
+  console.log("Create Customer")
   try {
+    console.log("Cloudinary img ", req.cloudinaryUrl)
     const customer = await CustomerModel.create({
       ...req.body,
       govtIdImage: req.cloudinaryUrl // Attach uploaded image URL
@@ -13,6 +15,7 @@ export const createCustomer = async (req, res) => {
 };
 
 export const getCustomers = async (req, res) => {
+  console.log("Get all Customers")
   try {
     const customers = await CustomerModel.find();
     res.json(customers);
@@ -21,10 +24,16 @@ export const getCustomers = async (req, res) => {
   }
 };
 
-export const getCustomerById = async (req, res) => {
+export const getCustomerByEmail = async (req, res) => {
   try {
-    const customer = await CustomerModel.findById(req.params.id);
-    if (!customer) return res.status(404).json({ error: "Customer not found" });
+    const { email } = req.params; // 👈 Expecting email in URL
+    console.log("Get by email ", email)
+    const customer = await CustomerModel.findOne({ email });
+
+    if (!customer) {
+      return res.status(404).json({ error: "Customer not found" });
+    }
+
     res.json(customer);
   } catch (error) {
     res.status(500).json({ error: error.message });

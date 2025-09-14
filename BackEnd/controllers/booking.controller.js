@@ -1,8 +1,8 @@
 import { BookingModel } from "../models/booking.model.js";
 import { CustomerModel } from "../models/customer.model.js";
-import { BookingModel } from "../models/booking.model.js";
 
 export const createBooking = async (req, res) => {
+  console.log("In Booking")
   try {
     const booking = await BookingModel.create(req.body);
     await CustomerModel.findByIdAndUpdate(
@@ -10,6 +10,7 @@ export const createBooking = async (req, res) => {
       { bookingId: booking._id },
       { new: true }
     );
+    console.log(booking)
     res.status(201).json(booking);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -48,7 +49,7 @@ export const updateBooking = async (req, res) => {
 export const getBookings = async (req, res) => {
   try {
     const bookings = await BookingModel.find()
-      .populate("customerId empId transactionId");
+      .populate("customerId employeeId transactionId");
     res.json(bookings);
   } catch (error) {
     res.status(500).json({ error: error.message });

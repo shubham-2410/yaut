@@ -1,5 +1,5 @@
 import express from "express";
-import { createCustomer, getCustomers, getCustomerById } from "../controllers/customer.controller.js";
+import { createCustomer, getCustomers, getCustomerByEmail } from "../controllers/customer.controller.js";
 import { customerSchema } from "../validators/customer.validator.js";
 import { validate } from "../middleware/validate.js";
 import { upload, uploadToCloudinary } from "../middleware/upload.js";
@@ -11,11 +11,17 @@ router.post(
   "/",
   authMiddleware,
   upload.single("govtIdImage"),
-  uploadToCloudinary("yaut/govtProof"),  // ✅ Govt Proof Folder
+  // Merge file into body for validation
+  (req, res, next) => {
+    if (req.file) req.body.govtIdImage = req.file.path || req.file.buffer;
+    next();
+  },
   validate(customerSchema),
+  uploadToCloudinary("yaut/govtProof"),
   createCustomer
 );
+
+router.get("/:email", authMiddleware, getCustomerByEmail);
 router.get("/", authMiddleware, getCustomers);
-router.get("/:id", authMiddleware, getCustomerById);
 
 export default router;

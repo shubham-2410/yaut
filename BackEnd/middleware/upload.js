@@ -19,8 +19,9 @@ export const upload = multer({ storage });
  * @param {string} folderName - The Cloudinary folder (e.g., 'yaut/payment')
  */
 export const uploadToCloudinary = (folderName) => async (req, res, next) => {
+  console.log("In Upload to Cloud")
   if (!req.file) return next();
-
+  console.log("File is present")
   try {
     const stream = cloudinary.uploader.upload_stream(
       { folder: folderName }, // ✅ Use passed folder name

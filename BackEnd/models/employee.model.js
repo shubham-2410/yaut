@@ -45,4 +45,4 @@ const employeeSchema = new mongoose.Schema({
   timestamps: true // 👈 adds createdAt & updatedAt automatically
 });
 
-export const UserModel = mongoose.model('Employee', employeeSchema);
+export const EmployeeModel = mongoose.model('Employee', employeeSchema);

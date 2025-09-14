@@ -6,8 +6,8 @@ import { authMiddleware, onlyAdmin } from "../middleware/auth.js";
 
 const router = express.Router();
 
-router.post("/", authMiddleware, onlyAdmin, validate(employeeSchema), createEmployee);
 router.post("/login", loginEmployee);
+router.post("/", authMiddleware, onlyAdmin, validate(employeeSchema), createEmployee);
 router.get("/", authMiddleware, onlyAdmin, getEmployees);
 
 export default router;
