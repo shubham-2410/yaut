@@ -18,6 +18,24 @@ const employeeSchema = new mongoose.Schema({
     required: true,
     minlength: 6       // 👈 Basic password rule
   },
+  name: {
+    type: String,
+    required: true,
+    trim: true,
+    minlength: 2
+  },
+  contact: {
+    type: String,
+    required: true,
+    match: [/^\+?[0-9]{10,15}$/, 'Contact number must be 10–15 digits, optionally starting with +']
+  },
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+    lowercase: true,
+    match: [/^\S+@\S+\.\S+$/, 'Invalid email format']
+  },
   status: {
     type: String,
     enum: ['Active', 'Inactive'],
