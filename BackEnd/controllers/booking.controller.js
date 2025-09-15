@@ -25,7 +25,7 @@ export const updateBooking = async (req, res) => {
     if (!transactionId) {
       return res.status(400).json({ error: "transactionId is required" });
     }
-
+    
     const updatedBooking = await BookingModel.findByIdAndUpdate(
       bookingId,
       {
@@ -34,7 +34,7 @@ export const updateBooking = async (req, res) => {
         ...(status && { status })
       },
       { new: true }
-    ).populate("customerId empId transactionId");
+    ).populate("customerId employeeId transactionId");
 
     if (!updatedBooking)
       return res.status(404).json({ error: "Booking not found" });

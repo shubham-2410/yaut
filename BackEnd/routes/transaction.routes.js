@@ -11,8 +11,13 @@ router.post(
   "/",
   authMiddleware,
   upload.single("paymentProof"),
-  uploadToCloudinary("yaut/payment"),  // ✅ Payment Proof Folder
+  (req, res, next) => {
+    if (req.file) req.body.paymentProof =  "https://res.cloudinary.com/demo/image/upload/v1691234567/yaut/payment/sample-proof.jpg";
+    if (req.body.amount) req.body.amount = Number(req.body.amount);
+    next();
+  },
   validate(transactionSchema),
+  uploadToCloudinary("yaut/payment"),
   createTransaction
 );
 router.get("/", authMiddleware, getTransactions);
