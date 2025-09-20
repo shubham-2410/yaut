@@ -1,6 +1,6 @@
 import { CustomerModel } from "../models/customer.model.js";
 
-export const createCustomer = async (req, res) => {
+export const createCustomer = async (req, res, next) => {
   console.log("Create Customer")
   try {
     console.log("Cloudinary img ", req.cloudinaryUrl)
@@ -10,21 +10,21 @@ export const createCustomer = async (req, res) => {
     });
     res.status(201).json(customer);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    next(error);
   }
 };
 
-export const getCustomers = async (req, res) => {
+export const getCustomers = async (req, res, next) => {
   console.log("Get all Customers")
   try {
     const customers = await CustomerModel.find();
     res.json(customers);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    next(error);
   }
 };
 
-export const getCustomerByEmail = async (req, res) => {
+export const getCustomerByEmail = async (req, res, next) => {
   try {
     const { email } = req.params; // 👈 Expecting email in URL
     console.log("Get by email ", email)
@@ -36,6 +36,6 @@ export const getCustomerByEmail = async (req, res) => {
 
     res.json(customer);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    next(error);
   }
 };

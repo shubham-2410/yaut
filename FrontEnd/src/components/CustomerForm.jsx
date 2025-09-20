@@ -1,6 +1,6 @@
-// src/pages/CustomerForm.jsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { createCustomerAPI } from "../services/operations/customerAPI"; // import the API call
 
 function CustomerForm() {
   const navigate = useNavigate();
@@ -11,9 +11,12 @@ function CustomerForm() {
     alternateContact: "",
     email: "",
     govtIdType: "Aadhar",
-    govtIdNumber: "",
+    govtIdNo: "",
     govtIdImage: null,
   });
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
@@ -24,15 +27,46 @@ function CustomerForm() {
     }
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log("Customer Data Submitted:", formData);
-    alert("Customer profile created (check console for data)");
+  const handleBack = () => {
+    navigate(-1);
   };
 
-  // Back button handler
-  const handleBack = () => {
-    navigate(-1); // Go back to previous page
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+
+    try {
+      const token = localStorage.getItem("authToken");
+
+      // Prepare FormData for file upload
+      const payload = new FormData();
+      for (let key in formData) {
+        if (formData[key] !== null) {
+          payload.append(key, formData[key]);
+        }
+      }
+
+      const res = await createCustomerAPI(payload, token);
+      console.log("✅ Customer created:", res.data);
+      alert("✅ Customer profile created successfully!");
+
+      // Reset form
+      setFormData({
+        name: "",
+        contact: "",
+        alternateContact: "",
+        email: "",
+        govtIdType: "Aadhar",
+        govtIdNo: "",
+        govtIdImage: null,
+      });
+    } catch (err) {
+      console.error("❌ Error creating customer:", err);
+      setError(err.response?.data?.message || "Failed to create customer profile");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -44,6 +78,8 @@ function CustomerForm() {
           &larr; Back
         </button>
       </div>
+
+      {error && <p className="text-danger">{error}</p>}
 
       <form className="row g-3" onSubmit={handleSubmit}>
         {/* Full Name */}
@@ -123,8 +159,8 @@ function CustomerForm() {
           <input
             type="text"
             className="form-control form-control-lg border border-dark text-dark"
-            name="govtIdNumber"
-            value={formData.govtIdNumber}
+            name="govtIdNo"
+            value={formData.govtIdNo}
             onChange={handleChange}
             placeholder="Enter govt ID number"
             required
@@ -146,8 +182,12 @@ function CustomerForm() {
 
         {/* Submit Button */}
         <div className="col-12 text-center">
-          <button type="submit" className="btn btn-primary btn-lg w-100 w-md-auto">
-            Create Profile
+          <button
+            type="submit"
+            className="btn btn-primary btn-lg w-100 w-md-auto"
+            disabled={loading}
+          >
+            {loading ? "Creating..." : "Create Profile"}
           </button>
         </div>
       </form>

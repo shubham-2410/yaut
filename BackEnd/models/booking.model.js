@@ -24,7 +24,7 @@ const bookingSchema = new mongoose.Schema({
         type: Date,
         required: true
     },
-    time: {
+    duration: {
         type: String,
         required: true,
         match: [/^(?:[01]\d|2[0-3]):[0-5]\d$/, 'Time must be in HH:MM format']
@@ -34,27 +34,29 @@ const bookingSchema = new mongoose.Schema({
         type: String,
         required: true,
         match: [/^(?:[01]\d|2[0-3]):[0-5]\d$/, 'Start Time must be in HH:MM format']
-        // Example: "14:45"
+    },
+    endTime: {
+        type: String,
+        match: [/^(?:[01]\d|2[0-3]):[0-5]\d$/, 'End Time must be in HH:MM format']
     },
     quotedAmount: {
         type: Number,
         required: true,
         min: 0
     },
-    advanceAmount: {
-        type: Number,
-        required: true,
-        min: 0
-    },
     pendingAmount: {
         type: Number,
-        required: true,
         min: 0
     },
     status: {
         type: String,
-        enum: ['Initiated', 'InProgress', 'Success', 'Terminated'],
-        default: 'Initiated'
+        enum: ['initiated', 'inprogress', 'success', 'terminated'],
+        default: 'initiated'
+    },
+    numPeople: {
+        type: Number,
+        min: 0,
+        required : true
     }
 }, {
     timestamps: true,

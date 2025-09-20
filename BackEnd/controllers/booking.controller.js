@@ -1,21 +1,33 @@
 import { BookingModel } from "../models/booking.model.js";
 import { CustomerModel } from "../models/customer.model.js";
 
-export const createBooking = async (req, res) => {
-  console.log("In Booking")
+export const createBooking = async (req, res, next) => {
   try {
-    const booking = await BookingModel.create(req.body);
+    console.log("In Booking", req.body);
+
+    // 1️⃣ Create Mongoose document
+    const booking = await BookingModel.create({
+      ...req.body,
+      employeeId: req.user.id
+    });
+
+    // 2️⃣ Update the related customer
     await CustomerModel.findByIdAndUpdate(
       booking.customerId,
       { bookingId: booking._id },
       { new: true }
     );
-    console.log(booking)
+
+    console.log("Booking created:", booking);
+
+    // 3️⃣ Return response
     res.status(201).json(booking);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error("Booking creation error:", error);
+    next(error);
   }
 };
+
 
 export const updateBooking = async (req, res) => {
   try {
@@ -25,7 +37,7 @@ export const updateBooking = async (req, res) => {
     if (!transactionId) {
       return res.status(400).json({ error: "transactionId is required" });
     }
-    
+
     const updatedBooking = await BookingModel.findByIdAndUpdate(
       bookingId,
       {

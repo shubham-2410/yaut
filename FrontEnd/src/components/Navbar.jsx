@@ -37,7 +37,7 @@ function Navbar({ user, onLogout }) {
         {/* Navbar links */}
         <div className="collapse navbar-collapse" id="navbarNav" ref={collapseRef}>
           <ul className="navbar-nav me-auto mb-2 mb-lg-0">
-            {user?.role === "admin" && (
+            {user?.type === "admin" && (
               <li className="nav-item">
                 <Link className="nav-link" to="/admin" onClick={handleNavLinkClick}>
                   Admin
@@ -45,7 +45,7 @@ function Navbar({ user, onLogout }) {
               </li>
             )}
 
-            {(user?.role === "admin" || user?.role === "backdesk") && (
+            {(user?.type === "admin" || user?.type === "backdesk") && (
               <li className="nav-item">
                 <Link className="nav-link" to="/create-customer" onClick={handleNavLinkClick}>
                   Create Customer
@@ -53,7 +53,7 @@ function Navbar({ user, onLogout }) {
               </li>
             )}
 
-            {user?.role === "admin" && (
+            {user?.type === "admin" && (
               <li className="nav-item">
                 <Link className="nav-link" to="/create-employee" onClick={handleNavLinkClick}>
                   Create Employee
@@ -68,7 +68,7 @@ function Navbar({ user, onLogout }) {
             </li>
 
             {/* Collections - Admin only */}
-            {user?.role === "admin" && (
+            {user?.type === "admin" && (
               <li className="nav-item">
                 <Link className="nav-link" to="/collections" onClick={handleNavLinkClick}>
                   Collections

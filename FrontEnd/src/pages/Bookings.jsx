@@ -56,7 +56,7 @@ function Bookings({ user }) {
     <div className="container mt-5">
       <div className="d-flex justify-content-between align-items-center mb-3">
         <h2>Bookings</h2>
-        {(user?.role === "admin" || user?.role === "backdesk") && (
+        {(user?.type === "admin" || user?.type === "backdesk") && (
           <button className="btn btn-success" onClick={handleCreateBooking}>
             + Create Booking
           </button>
@@ -87,9 +87,9 @@ function Bookings({ user }) {
                   View Details
                 </button>
 
-                {(user?.role === "admin" ||
-                  user?.role === "backdesk" ||
-                  user?.role === "onsite") && (
+                {(user?.type === "admin" ||
+                  user?.type === "backdesk" ||
+                  user?.type === "onsite") && (
                   <button
                     className="btn btn-info flex-fill"
                     onClick={() => handleUpdateBooking(booking)}

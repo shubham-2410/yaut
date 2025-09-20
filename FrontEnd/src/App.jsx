@@ -1,5 +1,5 @@
 // src/App.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 import Navbar from "./components/Navbar";
@@ -14,18 +14,36 @@ import CreateCustomer from "./pages/CreateCustomer";
 import CustomerDetails from "./pages/CustomerDetails";
 import CreateEmployee from "./pages/CreateEmployee";
 import CreateBooking from "./pages/CreateBooking";
-import UpdateBooking from "./pages/UpdateBooking"; // ✅ Import UpdateBooking
+import UpdateBooking from "./pages/UpdateBooking";
 
 function App() {
   const [user, setUser] = useState(null);
-
-  const handleLogin = (role) => {
-    setUser({ role }); // role: "admin", "backdesk", "onsite"
+  const handleLogin = (data) => {
+    // Save user + token
+    setUser(data);
+    localStorage.setItem("user", JSON.stringify(data));
   };
 
   const handleLogout = () => {
     setUser(null);
+    localStorage.removeItem("user");
+    localStorage.removeItem("authToken");
   };
+
+  // Restore user from localStorage
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch (e) {
+        localStorage.removeItem("user");
+      }
+    }
+  }, []);
+
+  // Normalize role to lowercase for consistent checks
+  const role = user?.type?.toLowerCase();
 
   return (
     <Router>
@@ -33,14 +51,15 @@ function App() {
 
       <Routes>
         {/* Public route */}
-        <Route path="/" element={<Login onLogin={handleLogin} />} />
-
+        { !user &&
+         <Route path="/" element={<Login onLogin={handleLogin} user={user} />} />
+        }
         {/* Protected routes */}
         <Route
           path="/admin"
           element={
             <ProtectedRoute user={user}>
-              {user?.role === "admin" ? <AdminDashboard /> : <NotFound />}
+              {role === "admin" ? <AdminDashboard /> : <NotFound />}
             </ProtectedRoute>
           }
         />
@@ -49,11 +68,7 @@ function App() {
           path="/customer-details"
           element={
             <ProtectedRoute user={user}>
-              {user?.role === "admin" || user?.role === "backdesk" ? (
-                <CustomerDetails />
-              ) : (
-                <NotFound />
-              )}
+              {["admin", "backdesk","onsite"].includes(role) ? <CustomerDetails /> : <NotFound />}
             </ProtectedRoute>
           }
         />
@@ -62,7 +77,7 @@ function App() {
           path="/create-employee"
           element={
             <ProtectedRoute user={user}>
-              {user?.role === "admin" ? <CreateEmployee /> : <NotFound />}
+              {role === "admin" ? <CreateEmployee /> : <NotFound />}
             </ProtectedRoute>
           }
         />
@@ -80,57 +95,40 @@ function App() {
           path="/collections"
           element={
             <ProtectedRoute user={user}>
-              {user?.role === "admin" ? <Collections /> : <NotFound />}
+              {role === "admin" ? <Collections /> : <NotFound />}
             </ProtectedRoute>
           }
         />
 
-        {/* Create Customer - admin/backdesk */}
         <Route
           path="/create-customer"
           element={
             <ProtectedRoute user={user}>
-              {user?.role === "admin" || user?.role === "backdesk" ? (
-                <CreateCustomer />
-              ) : (
-                <NotFound />
-              )}
+              {["admin", "backdesk"].includes(role) ? <CreateCustomer /> : <NotFound />}
             </ProtectedRoute>
           }
         />
 
-        {/* Create Booking - admin/backdesk */}
         <Route
           path="/create-booking"
           element={
             <ProtectedRoute user={user}>
-              {user?.role === "admin" || user?.role === "backdesk" ? (
-                <CreateBooking />
-              ) : (
-                <NotFound />
-              )}
+              {["admin", "backdesk"].includes(role) ? <CreateBooking /> : <NotFound />}
             </ProtectedRoute>
           }
         />
 
-        {/* Update Booking - admin/backdesk/onsite */}
         <Route
           path="/update-booking"
           element={
             <ProtectedRoute user={user}>
-              {user?.role === "admin" ||
-              user?.role === "backdesk" ||
-              user?.role === "onsite" ? (
-                <UpdateBooking />
-              ) : (
-                <NotFound />
-              )}
+              {["admin", "backdesk", "onsite"].includes(role) ? <UpdateBooking /> : <NotFound />}
             </ProtectedRoute>
           }
         />
 
         {/* Fallback */}
-        <Route path="*" element={<NotFound />} />
+        <Route path="*"  element={<NotFound user={user} />} />
       </Routes>
     </Router>
   );

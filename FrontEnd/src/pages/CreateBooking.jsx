@@ -1,100 +1,108 @@
-// src/pages/CreateBooking.jsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-
-// Mock customers data (replace with API call if needed)
-const mockCustomers = [
-  { id: 1, name: "John Doe" },
-  { id: 2, name: "Jane Smith" },
-];
+import { createBookingAPI } from "../services/operations/bookingAPI";
+import { getCustomerByEmailAPI } from "../services/operations/customerAPI";
 
 function CreateBooking() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    customerId: "",
+    email: "",
     boat: "",
     totalAmount: "",
-    advancePaid: "",
-    pendingAmount: "",
     date: "",
     duration: "",
     startTime: "",
-    endTime: "",
     numPeople: "",
   });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Booking Created:", formData);
-    alert("Booking created successfully! Check console for details.");
+    setLoading(true);
+    setError("");
 
-    // Reset form
-    setFormData({
-      customerId: "",
-      boat: "",
-      totalAmount: "",
-      advancePaid: "",
-      pendingAmount: "",
-      date: "",
-      duration: "",
-      startTime: "",
-      endTime: "",
-      numPeople: "",
-    });
+    try {
+      const token = localStorage.getItem("authToken");
 
-    // Navigate back to bookings page after creation
-    navigate("/bookings");
-  };
+      // Step 1: Get Customer ID by email
+      const { data: customer } = await getCustomerByEmailAPI(formData.email, token);
+      if (!customer?._id) {
+        setError("Customer not found. Please check the email.");
+        setLoading(false);
+        return;
+      }
 
-  // Back button handler
-  const handleBack = () => {
-    navigate(-1); // go back to the previous page
+      // Step 2: Prepare payload with correct field names
+      const payload = {
+        customerId: customer._id,
+        employeeId: "replace_with_actual_employee_id", // TODO: get from token or UI
+        yautId: parseInt(formData.boat, 10),
+        date: formData.date,
+        duration: formData.duration,
+        startTime: formData.startTime,
+        quotedAmount: parseFloat(formData.totalAmount),
+        numPeople: parseInt(formData.numPeople, 10),
+      };
+
+      // Step 3: Call booking API
+      const res = await createBookingAPI(payload, token);
+      console.log("✅ Booking created:", res.data);
+
+      alert("✅ Booking created successfully!");
+      navigate("/bookings");
+    } catch (err) {
+      console.error("❌ Error creating booking:", err);
+      setError(
+        err.response?.data?.error || err.response?.data?.message || "Failed to create booking"
+      );
+
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="container my-4 px-3">
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h4>Create Booking</h4>
-        <button className="btn btn-secondary" onClick={handleBack}>
+        <button className="btn btn-secondary" onClick={() => navigate(-1)}>
           &larr; Back
         </button>
       </div>
 
+      {error && <div className="alert alert-danger">{error}</div>}
+
       <form className="row g-3" onSubmit={handleSubmit}>
-        {/* Customer Dropdown */}
+        {/* Customer Email */}
         <div className="col-12">
-          <label className="form-label fw-bold">Select Customer</label>
-          <select
-            className="form-select border border-dark text-dark"
-            name="customerId"
-            value={formData.customerId}
+          <label className="form-label fw-bold">Customer Email</label>
+          <input
+            className="form-control border border-dark text-dark"
+            type="email"
+            name="email"
+            value={formData.email}
             onChange={handleChange}
+            placeholder="Enter registered customer email"
             required
-          >
-            <option value="">-- Select Customer --</option>
-            {mockCustomers.map((customer) => (
-              <option key={customer.id} value={customer.id}>
-                {customer.name}
-              </option>
-            ))}
-          </select>
+          />
         </div>
 
-        {/* Boat Assigned */}
+        {/* Boat / Yaut ID */}
         <div className="col-12">
-          <label className="form-label fw-bold">Boat Assigned</label>
+          <label className="form-label fw-bold">Boat (Yaut ID)</label>
           <input
-            type="text"
+            type="number"
             className="form-control border border-dark text-dark"
             name="boat"
             value={formData.boat}
             onChange={handleChange}
-            placeholder="Enter boat name"
+            placeholder="Enter Yaut ID"
             required
           />
         </div>
@@ -108,40 +116,12 @@ function CreateBooking() {
             name="totalAmount"
             value={formData.totalAmount}
             onChange={handleChange}
-            placeholder="Total amount"
+            placeholder="Enter amount"
             required
           />
         </div>
 
-        {/* Advance Paid */}
-        <div className="col-12 col-md-4">
-          <label className="form-label fw-bold">Advance Paid</label>
-          <input
-            type="number"
-            className="form-control border border-dark text-dark"
-            name="advancePaid"
-            value={formData.advancePaid}
-            onChange={handleChange}
-            placeholder="Advance amount"
-            required
-          />
-        </div>
-
-        {/* Pending Amount */}
-        <div className="col-12 col-md-4">
-          <label className="form-label fw-bold">Pending Amount</label>
-          <input
-            type="number"
-            className="form-control border border-dark text-dark"
-            name="pendingAmount"
-            value={formData.pendingAmount}
-            onChange={handleChange}
-            placeholder="Pending amount"
-            required
-          />
-        </div>
-
-        {/* Date of Ride */}
+        {/* Date */}
         <div className="col-12 col-md-6">
           <label className="form-label fw-bold">Date of Ride</label>
           <input
@@ -158,7 +138,7 @@ function CreateBooking() {
         <div className="col-12 col-md-6">
           <label className="form-label fw-bold">Duration (hours)</label>
           <input
-            type="number"
+            type="time"
             className="form-control border border-dark text-dark"
             name="duration"
             value={formData.duration}
@@ -181,19 +161,6 @@ function CreateBooking() {
           />
         </div>
 
-        {/* End Time */}
-        <div className="col-12 col-md-6">
-          <label className="form-label fw-bold">End Time</label>
-          <input
-            type="time"
-            className="form-control border border-dark text-dark"
-            name="endTime"
-            value={formData.endTime}
-            onChange={handleChange}
-            required
-          />
-        </div>
-
         {/* Number of People */}
         <div className="col-12 col-md-6">
           <label className="form-label fw-bold">Number of People</label>
@@ -210,8 +177,8 @@ function CreateBooking() {
 
         {/* Submit Button */}
         <div className="col-12 text-center">
-          <button type="submit" className="btn btn-primary w-100 w-md-auto">
-            Create Booking
+          <button type="submit" className="btn btn-primary w-100" disabled={loading}>
+            {loading ? "Creating..." : "Create Booking"}
           </button>
         </div>
       </form>

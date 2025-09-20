@@ -2,29 +2,41 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { EmployeeModel } from "../models/employee.model.js";
 
-export const createEmployee = async (req, res) => {
-  console.log("In")
+// ✅ Create Employee
+export const createEmployee = async (req, res, next) => {
   try {
     const hashedPassword = await bcrypt.hash(req.body.password, 10);
+
     const employee = await EmployeeModel.create({
       ...req.body,
-      password: hashedPassword
+      password: hashedPassword,
     });
-    res.status(201).json(employee);
+
+    employee.password = null;
+    res.status(201).json({ success: true, employee });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    next(error); // Pass everything to global error handler
   }
 };
 
-export const loginEmployee = async (req, res) => {
+// ✅ Login Employee
+export const loginEmployee = async (req, res, next) => {
   try {
     const { username, password } = req.body;
     const employee = await EmployeeModel.findOne({ username });
 
-    if (!employee) return res.status(404).json({ error: "Employee not found" });
+    if (!employee) {
+      const err = new Error("Employee not found");
+      err.status = 404;
+      throw err;
+    }
 
     const isMatch = await bcrypt.compare(password, employee.password);
-    if (!isMatch) return res.status(401).json({ error: "Invalid credentials" });
+    if (!isMatch) {
+      const err = new Error("Invalid credentials");
+      err.status = 401;
+      throw err;
+    }
 
     const token = jwt.sign(
       { id: employee._id, type: employee.type },
@@ -32,17 +44,19 @@ export const loginEmployee = async (req, res) => {
       { expiresIn: "1d" }
     );
 
-    res.json({ token, employee });
+    employee.password = null;
+    res.json({ success: true, token, employee });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    next(error);
   }
 };
 
-export const getEmployees = async (req, res) => {
+// ✅ Get All Employees
+export const getEmployees = async (req, res, next) => {
   try {
     const employees = await EmployeeModel.find();
-    res.json(employees);
+    res.json({ success: true, employees });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    next(error);
   }
 };

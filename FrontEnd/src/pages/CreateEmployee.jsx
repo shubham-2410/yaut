@@ -1,9 +1,9 @@
-// src/pages/CreateEmployee.jsx
 import React, { useState } from "react";
+import { createEmployeeAPI } from "../services/operations/authAPI";
 
 function CreateEmployee() {
   const [formData, setFormData] = useState({
-    role: "backdesk",
+    role: "",
     name: "",
     contact: "",
     email: "",
@@ -12,35 +12,84 @@ function CreateEmployee() {
     confirmPassword: "",
     status: "active",
   });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
+    setError("");
 
     if (formData.password !== formData.confirmPassword) {
-      alert("Passwords do not match!");
+      setError("Passwords do not match!");
+      setLoading(false)
       return;
     }
 
-    console.log("Employee Data Submitted:", formData);
-    alert("Employee created successfully! Check console for details.");
+    // Normalize contact number
+    let contact = formData.contact.trim();
+    if (contact.startsWith("0")) contact = contact.slice(1);
 
-    // Reset form
-    setFormData({
-      role: "backdesk",
-      name: "",
-      contact: "",
-      email: "",
-      username: "",
-      password: "",
-      confirmPassword: "",
-      status: "active",
-    });
+
+    try {
+      const token = localStorage.getItem("authToken");
+      const payload = {
+        type: formData.role,
+        name: formData.name,
+        contact,
+        email: formData.email,
+        username: formData.username,
+        password: formData.password,
+        status: formData.status, // ✅ Now matches Zod enum
+      };
+
+      const res = await createEmployeeAPI(payload, token);
+      console.log("✅ Employee created:", res.data);
+      alert("✅ Employee created successfully!");
+
+      // Reset form
+      setFormData({
+        role: "",
+        name: "",
+        contact: "",
+        email: "",
+        username: "",
+        password: "",
+        confirmPassword: "",
+        status: "active",
+      });
+    } catch (err) {
+      console.error("❌ Error creating employee:", err);
+
+      // Extract a readable message from backend or fallback
+      let message = "Failed to create employee.";
+
+      if (err.response?.data) {
+        if (typeof err.response.data === "string") {
+          // If backend returned plain string
+          message = err.response.data;
+        } else if (err.response.data.message) {
+          // If backend returned { message: "..." }
+          message = err.response.data.message;
+        } else if (Array.isArray(err.response.data.errors)) {
+          // If backend returned Zod errors array
+          message = err.response.data.errors
+            .map((e) => `${e.path || e.field}: ${e.message}`)
+            .join(", ");
+        }
+      }
+      setError(message);
+    }
+    finally {
+      setLoading(false);
+    }
   };
+
 
   return (
     <div className="container my-4 px-3">
@@ -54,7 +103,9 @@ function CreateEmployee() {
             name="role"
             value={formData.role}
             onChange={handleChange}
+            required
           >
+            <option value="">-- Select Role --</option>
             <option value="backdesk">Backdesk</option>
             <option value="onsite">Onsite</option>
           </select>
@@ -90,7 +141,7 @@ function CreateEmployee() {
 
         {/* Email */}
         <div className="col-12">
-          <label className="form-label fw-bold">Email Address (optional)</label>
+          <label className="form-label fw-bold">Email Address</label>
           <input
             type="email"
             className="form-control border border-dark text-dark"
@@ -98,6 +149,7 @@ function CreateEmployee() {
             value={formData.email}
             onChange={handleChange}
             placeholder="Enter email address"
+            required
           />
         </div>
 
@@ -157,10 +209,13 @@ function CreateEmployee() {
           </select>
         </div>
 
+        {/* Error */}
+        {error && <p className="text-danger text-center">{error}</p>}
+
         {/* Submit */}
         <div className="col-12 text-center">
-          <button type="submit" className="btn btn-primary w-100 w-md-auto">
-            Create Employee
+          <button type="submit" className="btn btn-primary w-100 w-md-auto" disabled={loading}>
+            {loading ? "Creating..." : "Create Employee"}
           </button>
         </div>
       </form>

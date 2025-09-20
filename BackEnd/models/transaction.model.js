@@ -9,7 +9,7 @@ const transactionSchema = new mongoose.Schema({
   },
   type: {
     type: String,
-    enum: ['Advance', 'Settlement'],
+    enum: ['advance', 'settlement'],
     required: true
   },
   paymentProof: {

@@ -9,6 +9,6 @@ export const employeeSchema = z.object({
     .regex(/^(?:\+91)?[6-9]\d{9}$/, "Must be a valid Indian number")
     .optional(),
   email: z.string().email("Invalid email"),
-  type: z.enum(["Admin", "BackDesk", "Onsite"]),
-  status: z.enum(["Active", "Inactive"]).default("Active"),
+  type: z.enum(["admin", "backdesk", "onsite"]),
+  status: z.enum(["active", "inactive"]).default("active"),
 });

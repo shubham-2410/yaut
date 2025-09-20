@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 const employeeSchema = new mongoose.Schema({
   type: {
     type: String,
-    enum: ['Admin', 'BackDesk', 'Onsite'], // 👈 Only these values allowed
+    enum: ['admin', 'backdesk', 'onsite'], // 👈 Only these values allowed
     required: true
   },
   username: {
@@ -38,8 +38,8 @@ const employeeSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['Active', 'Inactive'],
-    default: 'Active'
+    enum: ['active', 'inactive'],
+    default: 'active'
   }
 }, {
   timestamps: true // 👈 adds createdAt & updatedAt automatically

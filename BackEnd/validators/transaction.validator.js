@@ -6,7 +6,7 @@ export const transactionSchema = z.object({
     required_error: "Booking ID is required",
     invalid_type_error: "Booking ID must be a valid string"
   }).regex(/^[0-9a-fA-F]{24}$/, "Invalid MongoDB ObjectId"),
-  type: z.enum(["Advance", "Settlement"], {
+  type: z.enum(["advance", "settlement"], {
     required_error: "Transaction type is required",
     invalid_type_error: "Transaction type must be either 'Advance' or 'Settlement'"
   }),
