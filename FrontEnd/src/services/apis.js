@@ -1,5 +1,5 @@
-// const BASE_URL = import.meta.env.VITE_BASE_URL;
-const BASE_URL =  "http://localhost:9000/api";
+const BASE_URL = import.meta.env.VITE_BASE_URL;
+// const BASE_URL =  "http://localhost:9000/api";
 
 export const employee = {
   LOGIN_API: `${BASE_URL}/employees/login`,
@@ -12,5 +12,12 @@ export const customer = {
 }
 
 export const booking = {
+  GET_BOOKINGS_API: `${BASE_URL}/bookings`,
   CREATE_BOOKING_API: `${BASE_URL}/bookings`,
-}
+  UPDATE_BOOKING_API: (id) => `${BASE_URL}/bookings/${id}`,
+};
+
+export const transaction = {
+  CREATE_TRANSACTION_API: `${BASE_URL}/transactions`,
+  CREATE_WITH_BOOKING_UPDATE : `${BASE_URL}/transactions/create-with-booking-update`
+};

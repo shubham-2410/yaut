@@ -1,56 +1,37 @@
-// src/pages/Bookings.jsx
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
-const mockBookings = [
-  {
-    id: 1,
-    name: "John Doe",
-    boat: "SpeedBoat A",
-    status: "Pending", // Only Pending or Completed
-    contact: "1234567890",
-    email: "john@example.com",
-    govtIdType: "Aadhar",
-    govtIdNumber: "1234-5678-9012",
-    dateTime: "2025-09-14 10:00 AM",
-    numPeople: 2,
-    paymentStatus: "Pending",
-    totalAmount: 2000,
-    advancePaid: 500,
-    pendingAmount: 1500,
-  },
-  {
-    id: 2,
-    name: "Jane Smith",
-    boat: "Yacht B",
-    status: "Completed",
-    contact: "9876543210",
-    email: "jane@example.com",
-    govtIdType: "PAN",
-    govtIdNumber: "ABCDE1234F",
-    dateTime: "2025-09-14 12:00 PM",
-    numPeople: 4,
-    paymentStatus: "Paid",
-    totalAmount: 5000,
-    advancePaid: 5000,
-    pendingAmount: 0,
-  },
-];
+import { getBookingsAPI } from "../services/operations/bookingAPI"; // using apiConnector
 
 function Bookings({ user }) {
   const navigate = useNavigate();
+  const [bookings, setBookings] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  const handleViewDetails = (customer) => {
-    navigate("/customer-details", { state: { customer } });
+  const fetchBookings = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem("authToken");
+      const res = await getBookingsAPI(token);
+      setBookings(res.data);
+    } catch (err) {
+      console.error("❌ Error fetching bookings:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleCreateBooking = () => {
-    navigate("/create-booking");
+  useEffect(() => {
+    fetchBookings();
+  }, []);
+
+  const handleViewDetails = (booking) => {
+    navigate("/customer-details", { state: { booking } });
   };
 
-  const handleUpdateBooking = (booking) => {
+
+  const handleCreateBooking = () => navigate("/create-booking");
+  const handleUpdateBooking = (booking) =>
     navigate("/update-booking", { state: { booking } });
-  };
 
   return (
     <div className="container mt-5">
@@ -63,45 +44,47 @@ function Bookings({ user }) {
         )}
       </div>
 
-      <div className="row mt-3">
-        {mockBookings.map((booking) => (
-          <div key={booking.id} className="col-md-6 mb-3">
-            <div className="card p-3">
-              <h5>{booking.name}</h5>
-              <p>Boat: {booking.boat}</p>
-              <p>
-                Status:{" "}
-                <span
-                  className={`badge ${
-                    booking.status === "Pending" ? "bg-warning" : "bg-success"
-                  }`}
-                >
-                  {booking.status}
-                </span>
-              </p>
-              <div className="d-flex gap-2">
-                <button
-                  className="btn btn-primary flex-fill"
-                  onClick={() => handleViewDetails(booking)}
-                >
-                  View Details
-                </button>
-
-                {(user?.type === "admin" ||
-                  user?.type === "backdesk" ||
-                  user?.type === "onsite") && (
-                  <button
-                    className="btn btn-info flex-fill"
-                    onClick={() => handleUpdateBooking(booking)}
+      {loading ? (
+        <p>Loading bookings...</p>
+      ) : (
+        <div className="row mt-3">
+          {bookings.map((booking) => (
+            <div key={booking._id} className="col-md-6 mb-3">
+              <div className="card p-3">
+                <h5>{booking.customerId.name}</h5>
+                <p>Boat: {booking.yautId}</p>
+                <p>
+                  Status:{" "}
+                  <span
+                    className={`badge ${booking.status === "Initiated" ? "bg-warning" : "bg-success"
+                      }`}
                   >
-                    Update Booking
+                    {booking.status}
+                  </span>
+                </p>
+                <div className="d-flex gap-2">
+                  <button
+                    className="btn btn-primary flex-fill"
+                    onClick={() => handleViewDetails(booking)}
+                  >
+                    View Details
                   </button>
-                )}
+                  {(user?.type === "admin" ||
+                    user?.type === "backdesk" ||
+                    user?.type === "onsite") && (
+                      <button
+                        className="btn btn-info flex-fill"
+                        onClick={() => handleUpdateBooking(booking)}
+                      >
+                        Update Booking
+                      </button>
+                    )}
+                </div>
               </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

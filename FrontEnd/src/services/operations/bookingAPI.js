@@ -12,3 +12,22 @@ export const createBookingAPI = async (payload, token) => {
     }
   );
 };
+
+export const getBookingsAPI = async (token) => {
+  return apiConnector(
+    "GET",
+    booking.GET_BOOKINGS_API,
+    null,
+    { Authorization: `Bearer ${token}` }
+  );
+};
+
+
+// As of not used, made changes in backend and integrated with create Transaction
+export const updateBookingAPI = async (id, payload, token) => {
+  const response = await apiConnector("PUT", booking.UPDATE_BOOKING_API(id), payload, {
+    Authorization: `Bearer ${token}`,
+    "Content-Type": "application/json",
+  });
+  return response.data;
+};

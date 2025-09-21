@@ -8,7 +8,8 @@ export const createBooking = async (req, res, next) => {
     // 1️⃣ Create Mongoose document
     const booking = await BookingModel.create({
       ...req.body,
-      employeeId: req.user.id
+      employeeId: req.user.id,
+      pendingAmount: req.body.quotedAmount
     });
 
     // 2️⃣ Update the related customer
@@ -28,32 +29,31 @@ export const createBooking = async (req, res, next) => {
   }
 };
 
-
-export const updateBooking = async (req, res) => {
+export const updateBooking = async (req, res, next) => {
   try {
-    const { transactionId, pendingAmount, status} = req.body;
+    const { transactionId, amount, status } = req.body;
     const bookingId = req.params.id;
 
     if (!transactionId) {
       return res.status(400).json({ error: "transactionId is required" });
     }
 
+    const booking = await BookingModel.findById(bookingId);
+    if (!booking) return res.status(404).json({ error: "Booking not found" });
+
     const updatedBooking = await BookingModel.findByIdAndUpdate(
       bookingId,
       {
-        $push: { transactionId }, // add new transaction
-        ...(pendingAmount && { pendingAmount }),
-        ...(status && { status })
+        $push: { transactionId },
+        pendingAmount: Math.max(booking.pendingAmount - amount, 0),
+        ...(status && { status }),
       },
       { new: true }
     ).populate("customerId employeeId transactionId");
 
-    if (!updatedBooking)
-      return res.status(404).json({ error: "Booking not found" });
-
     res.status(200).json(updatedBooking);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    next(error);
   }
 };
 
