@@ -10,6 +10,7 @@ export const createEmployee = async (req, res, next) => {
     const employee = await EmployeeModel.create({
       ...req.body,
       password: hashedPassword,
+      company: req.user.company
     });
 
     employee.password = null;
@@ -39,7 +40,7 @@ export const loginEmployee = async (req, res, next) => {
     }
 
     const token = jwt.sign(
-      { id: employee._id, type: employee.type },
+      { id: employee._id, type: employee.type, company: employee.company },
       process.env.JWT_SECRET,
       { expiresIn: "1d" }
     );
@@ -54,7 +55,7 @@ export const loginEmployee = async (req, res, next) => {
 // ✅ Get All Employees
 export const getEmployees = async (req, res, next) => {
   try {
-    const employees = await EmployeeModel.find();
+    const employees = await EmployeeModel.find({company: req.user.company});
     res.json({ success: true, employees });
   } catch (error) {
     next(error);

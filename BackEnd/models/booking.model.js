@@ -7,6 +7,10 @@ const bookingSchema = new mongoose.Schema({
         ref: 'Customer',
         required: true
     },
+    company: {
+        type: String,
+        required: true
+    },
     employeeId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Employee', // 👈 Points to Employee model

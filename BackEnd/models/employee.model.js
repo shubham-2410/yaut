@@ -6,6 +6,10 @@ const employeeSchema = new mongoose.Schema({
     enum: ['admin', 'backdesk', 'onsite'], // 👈 Only these values allowed
     required: true
   },
+  company: {
+    type: String,
+    required: true
+  },
   username: {
     type: String,
     required: true,

@@ -9,6 +9,7 @@ export const createBooking = async (req, res, next) => {
     const booking = await BookingModel.create({
       ...req.body,
       employeeId: req.user.id,
+      company: req.user.company,
       pendingAmount: req.body.quotedAmount
     });
 
@@ -60,7 +61,7 @@ export const updateBooking = async (req, res, next) => {
 
 export const getBookings = async (req, res) => {
   try {
-    const bookings = await BookingModel.find()
+    const bookings = await BookingModel.find({company:req.user.company})
       .populate("customerId employeeId transactionId");
     res.json(bookings);
   } catch (error) {
